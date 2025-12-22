@@ -123,6 +123,66 @@ abstract class BaseValueRenderer {
 }
 ----
 
+==== Implicit converters for built-in renderers
+
+It's often desirable to transform property names (see "Transforming property names" above) differently for different rendered formats.
+For example, a property may be named with `snake_case` when rendered to JSON and `kebab-case` when rendered to YAML.
+
+New APIs for per-format property renaming will be added for each built-in renderer that has a corresponding module:
+
+|===
+|Renderer Type |Property Annotation Type
+
+|`base.JsonRenderer` |`json.Property`
+|`base.YamlRenderer` |`yaml.Property`
+|`jsonnet.Renderer`  |`jsonnet.Property`
+|`protobuf.Renderer` |`protobuf.Property`
+|`xml.Renderer`      |`xml.Property`
+
+|===
+
+Usage example:
+
+[source,pkl]
+----
+// fmt.pkl
+import "pkl:json"
+import "pkl:yaml"
+
+@json.Property { name = "foo_bar" }
+@yaml.Property { name = "foo-bar" }
+fooBar: String = "hello world"
+----
+
+[source,terminaloutput]
+----
+$ pkl eval fmt.pkl -f json
+{
+  "foo_bar": "hello world"
+}
+
+$ pkl eval fmt.pkl -f yaml
+foo-bar: hello world
+----
+
+Each renderer will implicitly add its corresponding `<format>.Property` annotation as an annotation converter.
+Manually defining an annotation converter for one of these annotation types would override the renderer's default behavior for the annotation.
+
+Renderers in `pkl:base` without a corresponding module (`PcfRenderer`, `PropertiesRenderer`, and `PlistRenderer`) will not receive corresponding annotations at this time.
+A corresponding annotation for `pklbinary.Renderer` is also omitted; the `pkl-binary` format is not intended to deviate from the native Pkl representation of `Typed` values, which is antithetical to property renaming.
+
+[source,terminaloutput]
+----
+$ pkl eval fmt.pkl -f json
+{
+  "foo_bar": "hello world"
+}
+
+$ pkl eval fmt.pkl -f yaml
+foo-bar: hello world
+----
+
+
 === Usage Examples
 
 The same scenarios above become simple to implement and maintain with annotation converters:
@@ -208,35 +268,6 @@ Users of Pkl's language bindings often bypass rendering entirely and consume the
 While it's possible to work around this use the xref:SPICE-0021-binary-renderer-and-parser.adoc[`pkl-binary`] renderer and evaluate a module's `output.bytes` property, this requires tighter coupling between a module and how it is consumed than desired.
 
 This sort of validation is something the team is interested in ergonomic support for, but is not a use case well-served by this proposal.
-
-== Future directions
-
-=== Built-in annotations for built-in renderers
-
-One possible extension to annotation converters might be built-in annotations for specific renderers.
-These annotation converters could be configured by default on their respective renderers, allowing per-format customization for simple cases without needing to configure any converters directly:
-
-[source,pkl]
-----
-// fmt.pkl
-import "pkl:json"
-import "pkl:yaml"
-
-@json.Property { name = "foo_bar" }
-@yaml.Property { name = "foo-bar" }
-fooBar: String = "hello world"
-----
-
-[source,terminaloutput]
-----
-$ pkl eval fmt.pkl -f json
-{
-  "foo_bar": "hello world"
-}
-
-$ pkl eval fmt.pkl -f yaml
-foo-bar: hello world
-----
 
 == Alternatives considered
 
