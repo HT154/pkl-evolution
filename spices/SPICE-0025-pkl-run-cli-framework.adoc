@@ -1,0 +1,54 @@
+= `pkl run` CLI framework
+
+* Proposal: link:./SPICE-0025-pkl-run-cli-framework.adoc[SPICE-0025]
+* Author: https://github.com/HT154[Jen Basch]
+* Status: TBD
+* Implemented in: Pkl 0.31
+* Category: CLI, Standard Library
+
+== Introduction
+
+Provide a framework for implementing full-feature CLI tools in Pkl.
+
+== Motivation
+
+It is possible to implement simple CLI tools using Pkl today.
+Running such a tool looks like this:
+
+[source,shell]
+----
+$ pkl eval my-tool.pkl -p requiredArg=foo -p optionalArg=bar -p listArg=a,b,c
+----
+
+This approach has a few major drawbacks:
+
+* Arguments are passed using external properties or environment variables, eschewing established CLI conventions.
+* Modern CLI features like generated `--help` and shell completion are not possible.
+* Parsing and validation for non-`String` arguments must be done manually.
+* There is no support for tools with hierarchical (sub)command structures.
+* It is not possible to run a Pkl tool that imports a module supplied by the user on the command line.
+
+== Proposed Solution
+
+
+
+== Detailed design
+
+
+
+== Compatibility
+
+This proposal is purely additive.
+
+== Future directions
+
+* Built-in support for additional argument types like `Map<K, List<T>>` could be added in a future release.
+
+== Alternatives considered
+
+* Definition of options using data rather than types
+* Parse interspersed CLI flags with Pkl's by prefixing core options
+
+== Acknowledgements
+
+This proposal evolved from a design document originally written by https://github.com/bioball[Dan Chao].
